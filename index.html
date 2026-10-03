@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="zh-HK">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>六合彩攪珠結果</title>
+<style>
+:root{
+  --bg:#eef1f4; --panel:#fff; --ink:#15202b; --mute:#5b6875; --line:#d9dfe5;
+  --red:#d6282f; --blue:#1f62c9; --green:#12923f; --gold:#b8860b;
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#10151b; --panel:#18202a; --ink:#e8edf2; --mute:#98a4b0; --line:#2a3541; --gold:#e0b23a}
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:16px/1.5 system-ui,-apple-system,"Noto Sans TC","PingFang HK","Microsoft JhengHei",sans-serif;
+  padding:max(16px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) max(24px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
+main{max-width:880px;margin:0 auto}
+h1{font-size:clamp(1.25rem,4vw,1.6rem);margin:8px 0 20px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:clamp(16px,4vw,28px)}
+.meta{color:var(--mute);font-size:.9rem;margin:0 0 16px}
+.balls{display:flex;flex-wrap:wrap;align-items:center;gap:clamp(6px,1.6vw,12px)}
+.ball{--s:clamp(38px,11vw,72px);width:var(--s);height:var(--s);border-radius:50%;
+  display:grid;place-items:center;color:#fff;font-weight:700;
+  font-size:calc(var(--s)*.42);font-variant-numeric:tabular-nums;flex:none}
+.ball.red{background:var(--red)}.ball.blue{background:var(--blue)}.ball.green{background:var(--green)}
+.ball.extra{box-shadow:0 0 0 3px var(--panel),0 0 0 5px var(--gold)}
+.plus{color:var(--mute);font-size:1.4rem;padding:0 2px}
+.extra-label{color:var(--gold);font-size:.8rem;width:100%;margin:-2px 0 0}
+h2{font-size:1.05rem;margin:28px 0 12px}
+.row{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;align-items:center;
+  padding:12px 0;border-top:1px solid var(--line)}
+.row:first-child{border-top:0}
+.row .info{font-size:.85rem;color:var(--mute);min-width:6.5em}
+.row .info b{display:block;color:var(--ink);font-size:.95rem}
+.row .ball{--s:clamp(30px,8.6vw,40px)}
+.row .balls{gap:clamp(4px,1.2vw,8px)}
+@media (max-width:480px){.row{grid-template-columns:1fr}}
+.empty,.err{padding:24px;text-align:center;color:var(--mute)}
+footer{color:var(--mute);font-size:.8rem;margin-top:20px}
+.legend{display:flex;gap:14px;font-size:.85rem;color:var(--mute);margin-top:14px;flex-wrap:wrap}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px}
+</style>
+</head>
+<body>
+<main>
+  <h1>六合彩攪珠結果</h1>
+  <section class="panel" id="latest" aria-live="polite"><div class="empty">載入中…</div></section>
+  <h2>過往結果</h2>
+  <section class="panel" id="history"></section>
+  <footer>資料每日由 GitHub Actions 自動更新，來源：香港賽馬會。結果僅供參考，以馬會官方公佈為準。</footer>
+</main>
+<script>
+const RED=[1,2,7,8,12,13,18,19,23,24,29,30,34,35,40,45,46];
+const BLUE=[3,4,9,10,14,15,20,25,26,31,36,37,41,42,47,48];
+const color=n=>RED.includes(n)?"red":BLUE.includes(n)?"blue":"green";
+const ball=(n,x="")=>`<span class="ball ${color(n)} ${x}">${n}</span>`;
+const WD=["日","一","二","三","四","五","六"];
+const fmt=s=>`${s}（星期${WD[new Date(s+"T12:00:00Z").getUTCDay()]}）`;
+const balls=d=>`<div class="balls">${d.numbers.map(n=>ball(n)).join("")}<span class="plus" aria-label="特別號碼">+</span>${ball(d.extra,"extra")}</div>`;
+
+fetch("data/results.json",{cache:"no-cache"}).then(r=>{if(!r.ok)throw 0;return r.json()}).then(({draws})=>{
+  const L=document.getElementById("latest"),H=document.getElementById("history");
+  if(!draws.length){
+    L.innerHTML='<div class="empty">暫無資料。請到 GitHub 的 Actions 手動執行一次「Update Mark Six results」。</div>';
+    H.style.display="none";return;
+  }
+  const [a,...rest]=draws;
+  L.innerHTML=`<p class="meta">第 ${a.id} 期 · ${fmt(a.date)}</p>${balls(a)}
+    <div class="legend"><span><i style="background:var(--red)"></i>紅波</span><span><i style="background:var(--blue)"></i>藍波</span><span><i style="background:var(--green)"></i>綠波</span><span><i style="box-shadow:0 0 0 2px var(--gold);background:var(--mute)"></i>特別號碼</span></div>`;
+  H.innerHTML=rest.map(d=>`<div class="row"><div class="info"><b>${d.id}</b>${d.date}</div>${balls(d)}</div>`).join("")||'<div class="empty">暫無更多紀錄</div>';
+}).catch(()=>{document.getElementById("latest").innerHTML='<div class="err">無法載入資料，請稍後重新整理。</div>'});
+</script>
+</body>
+</html>
