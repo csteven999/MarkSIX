@@ -1,0 +1,43 @@
+name: Update Mark Six results
+
+on:
+  schedule:
+    - cron: "30 14 * * *"   # 22:30 香港時間（攪珠後）
+    - cron: "0 17 * * *"    # 01:00 香港時間（補抓）
+  workflow_dispatch:
+    inputs:
+      count:
+        description: "回填最近幾期（例如 100）；留空＝日常模式"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-results
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Fetch results
+        run: node scripts/fetch.mjs
+        env:
+          COUNT: ${{ github.event.inputs.count }}
+      - name: Commit if changed
+        run: |
+          if [ -n "$(git status --porcelain data/)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add data/results.json
+            git commit -m "chore: update Mark Six results"
+            git push
+          else
+            echo "No new draws."
+          fi
