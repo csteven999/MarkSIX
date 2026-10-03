@@ -31,7 +31,7 @@ scripts/fetch.mjs               向 HKJC 抓取並按期數合併
 
 ## 已知限制
 
-- 資料來源為 HKJC GraphQL（`info.cld.hkjc.com/graphql/base/`），此端點非正式公開文件，格式或存取條件可能改變。若 Actions 失敗，先查看日誌中印出的 API 回應，再調整 `scripts/fetch.mjs` 的查詢欄位。
+- 資料來源為 HKJC GraphQL（`info.cld.hkjc.com/graphql/base/`），伺服器有查詢白名單，查詢須與官網逐字相同，否則回 `WHITELIST_ERROR`；失敗時自動改用 marksixinfo.com 備援（僅最近 20 期，回填 100 期需官方來源成功）。端點非正式公開，格式可能改變，失敗時查看 Actions 日誌。
 - GitHub 排程可能延遲，攪珠後數十分鐘內未必更新；01:00 的第二次執行用作補抓。
 - 公開 repo 若 60 日無任何 commit，GitHub 會停用排程；平日每週有新攪珠即有 commit，一般不受影響。
 - 歷史號碼僅供記錄，每期為獨立隨機事件，不能預測下一期。
