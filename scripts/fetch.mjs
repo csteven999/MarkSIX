@@ -70,7 +70,8 @@ async function fromHKJC(n) {
     .filter((d) => d?.drawResult?.drawnNo?.length === 6)
     .map((d) => ({
       id: `${String(d.year).slice(-2)}/${pad(d.no)}`,
-      date: String(d.openDate).slice(0, 10),
+      // 注意：openDate 是「開售日」（約等於上一期攪珠日），實際攪珠日是 drawDate
+      date: String(d.drawDate || d.closeDate || d.openDate).slice(0, 10),
       numbers: d.drawResult.drawnNo.map(Number).sort((a, b) => a - b),
       extra: Number(d.drawResult.xDrawnNo),
     }));
